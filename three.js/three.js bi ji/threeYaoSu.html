@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>有了这三样东西，我们才能够使用相机将场景渲染到网页上去。</title>
+		 <div>
+		 	在Three.js中，
+		 	要渲染物体到网页中，
+		 	我们需要3个组建：场景（scene）、相机（camera）和渲染器（renderer）。
+		 	有了这三样东西，才能将物体渲染到网页中去。
+		 </div>  
+		 <h1>3组建代码：</h1>
+		 
+		<div class="scene">
+		 	<h2>场景：</h2>	
+		 	代码如下：构建一个场景
+		 	var scene = new THREE.Scene();
+		</div>
+		
+		 <div class="camera">
+		 	<h2>相机：</h2>
+		 	<div>
+		 		代码如下：
+		 		相机分很多种，这里介绍透视相机适合看人像
+		 		 var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+		 	</div>
+		 </div>
+		 
+		<div class="WebRenderer">
+			<h2>渲染器</h2>
+			定义一个WebRenderer渲染器；
+			代码如下：
+			var renderer = new THREE.WebGLRenderer();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
+            <h6>
+            	注意，
+            	渲染器renderer的domElement元素，
+            	表示渲染器中的画布，
+            	所有的渲染都是画在domElement上的，
+            	所以这里的appendChild表示将这个domElement挂接在body下面，
+            	这样渲染的结果就能够在页面中显示了。
+            </h6>
+		</div>
+		
+		<div class="geometry">
+			<h2>
+				添加物体到场景中
+			</h2>
+			代码如下：
+			var geometry = new THREE.CubeGeometry(1,1,1); 
+				var material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+				var cube = new THREE.Mesh(geometry, material); 
+				scene.add(cube);
+            <h4>
+            	THREE.CubeGeometry是一个几何体，几何体由什么组成:
+            </h4>
+            cubeGeometry的原型如下代码所示：
+            CubeGeometry(width, height, depth, segmentsWidth, segmentsHeight, segmentsDepth, materials, sides);
+            <h5>注释：
+               <p>width：立方体x轴的长度</p>
+               <p>height：立方体y轴的长度</p>
+               <p>depth：立方体z轴的深度，也就是长度</p>
+            </h5>
+            
+		</div>
+		
+		<div class="render">
+			<h2>渲染</h2>
+			<p>渲染应该使用渲染器，结合相机和场景来得到结果画面。实现这个功能的函数是:renderer.render(scene, camera);</p>
+			<p>渲染函数的原型如下：
+                  render( scene, camera, renderTarget, forceClear )
+			</p>
+			<h5>
+				注释：
+				   scene：前面定义的场景
+
+                   camera：前面定义的相机
+
+                   renderTarget：渲染的目标，默认是渲染到前面定义的render变量中
+
+                   forceClear：每次绘制之前都将画布的内容给清除，即使自动清除标志autoClear为false，也会清除。
+			</h5>
+			
+			
+		</div>
+		
+		<div class="requestAnimationFrame">
+			<h2>渲染循环</h2>
+			<p>渲染有两种方式：实时渲染和离线渲染 。</p>
+			<p>实时渲染：就是需要不停的对画面进行渲染，即使画面中什么也没有改变，也需要重新渲染。下面就是一个渲染循环：</p>
+			代码如下：
+			function render() {
+					    cube.rotation.x += 0.1;
+					    cube.rotation.y += 0.1;
+					    renderer.render(scene, camera);
+					    requestAnimationFrame(render);
+             }
+             <p>
+             	其中一个重要的函数是requestAnimationFrame，
+             	这个函数就是让浏览器去执行一次参数中的函数，
+             	这样通过上面render中调用requestAnimationFrame()函数，
+             	requestAnimationFrame()函数又让rander()再执行一次，
+             	就形成了我们通常所说的游戏循环了。
+             </p>
+		</div>
+		 
+		 <div>
+		 	<h2>场景，相机，渲染器之间的关系</h2>
+		 	<p>相机的作用就是面对场景，在场景中取一个合适的景，把它拍下来。</p>
+		 	<p>渲染器的作用就是将相机拍摄下来的图片，放到浏览器中去显示。</p>
+		 </div>
+		 
+		 <div>
+		 	<h2>第二个框架（重构）</h2>
+		 	第一个框架是将所有代码在一段脚本中完成，当逻辑复杂一点后，就比较难读懂。所以，我们将其按照功能分解成函数，代码如下：
+            
+        <script src="js/Three.js" data-ke-src="js/Three.js"></script>
+        
+            div#canvas-frame {
+                border: none;
+                cursor: pointer;
+                width: 100%;
+                height: 600px;
+                background-color: #EEEEEE;
+            }
+
+      
+      
+            var renderer;
+            function initThree() {
+                width = document.getElementById('canvas-frame').clientWidth;
+                height = document.getElementById('canvas-frame').clientHeight;
+                renderer = new THREE.WebGLRenderer({
+                    antialias : true
+                });
+                renderer.setSize(width, height);
+                document.getElementById('canvas-frame').appendChild(renderer.domElement);
+                renderer.setClearColor(0xFFFFFF, 1.0);
+            }
+
+            var camera;
+            function initCamera() {
+                camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+                camera.position.x = 0;
+                camera.position.y = 1000;
+                camera.position.z = 0;
+                camera.up.x = 0;
+                camera.up.y = 0;
+                camera.up.z = 1;
+                camera.lookAt({
+                    x : 0,
+                    y : 0,
+                    z : 0
+                });
+            }
+
+            var scene;
+            function initScene() {
+                scene = new THREE.Scene();
+            }
+
+            var light;
+            function initLight() {
+                light = new THREE.DirectionalLight(0xFF0000, 1.0, 0);
+                light.position.set(100, 100, 200);
+                scene.add(light);
+            }
+
+            var cube;
+            function initObject() {
+
+                var geometry = new THREE.Geometry();
+                var material = new THREE.LineBasicMaterial( { vertexColors: THREE.VertexColors} );
+                var color1 = new THREE.Color( 0x444444 ), color2 = new THREE.Color( 0xFF0000 );
+
+                // 线的材质可以由2点的颜色决定
+                var p1 = new THREE.Vector3( -100, 0, 100 );
+                var p2 = new THREE.Vector3(  100, 0, -100 );
+                geometry.vertices.push(p1);
+                geometry.vertices.push(p2);
+                geometry.colors.push( color1, color2 );
+
+                var line = new THREE.Line( geometry, material, THREE.LinePieces );
+                scene.add(line);
+            }
+            function render()
+            {
+                renderer.clear();
+                renderer.render(scene, camera);
+                requestAnimationFrame(render);
+            }
+            function threeStart() {
+                initThree();
+                initCamera();
+                initScene();
+                initLight();
+                initObject();
+                render();
+            }
+
+       
+  
+
+    <body onload="threeStart();">
+        <div id="canvas-frame"></div>
+    </body>
+
+
+		 </div>
+	</head>
+	<body>
+	</body>
+</html>
